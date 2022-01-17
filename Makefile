@@ -16,18 +16,18 @@ bin/%.o: src/%.c src/*.h
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-test/test%.o: test/test%.s
+test/temp/test%.o: test/test%.s
 	gcc -c $< -o $@
 
-test: bin/azld test/test1.o test/test2.o
+test: bin/azld test/temp/test1.o test/temp/test2.o
 	echo test1
-	$(BIN) test/test1.o > test/test1
-	chmod +x test/test1
-	test/test1
+	$(BIN) test/temp/test1.o > test/temp/test1
+	chmod +x test/temp/test1
+	test/temp/test1
 	echo test2
-	$(BIN) test/test2.o > test/test2
-	chmod +x test/test2
-	test/test2
+	$(BIN) test/temp/test2.o > test/temp/test2
+	chmod +x test/temp/test2
+	test/temp/test2
 
 .PHONY: test
 .SILENT: test
