@@ -1,5 +1,6 @@
 #include "parse.h"
 #include "container.h"
+#include "util.h"
 #include <elf.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -97,7 +98,12 @@ ObjectFile *parse(void *head, HashTable *global_symbol_table) {
       fprintf(stderr, "  st_size: %ld\n", symtab[i].st_size);
       */
 
-      if (ELF64_ST_BIND(symtab[i].st_info) == STB_GLOBAL) {
+      if (ELF64_ST_BIND(symtab[i].st_info) == STB_GLOBAL &&
+          symtab[i].st_shndx != SHN_UNDEF) {
+        if (hash_table_contain(global_symbol_table,
+                               new_string(symbol_name, strlen(symbol_name)))) {
+          ERROR("Multiple symbol definition: %s", symbol_name);
+        }
         hash_table_store(global_symbol_table,
                          new_string(symbol_name, strlen(symbol_name)),
                          &symtab[i]);

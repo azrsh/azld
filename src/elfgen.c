@@ -113,24 +113,6 @@ void elfgen(Vector *objs, HashTable /*Elf64_Sym*/ *global_symbol_table) {
       const char *const symbol_name =
           head + obj->strtab_section_header->sh_offset + symtab[i].st_name;
       fprintf(stderr, "analyze: %s\n", symbol_name);
-
-      size_t target_section_offset = 0;
-      if (&section_header_table[symtab[i].st_shndx] == text_section_header) {
-        target_section_offset = buffer_text_section_offset;
-      } else if (&section_header_table[symtab[i].st_shndx] ==
-                 data_section_header) {
-        target_section_offset = buffer_data_section_offset;
-      } else {
-        //      ERROR("Unreachable");
-      }
-
-      Elf64_Addr target_addr =
-          (Elf64_Addr)buffer + target_section_offset + symtab[i].st_value;
-      Elf64_Addr addr =
-          LOAD_ADDRESS + target_section_offset + symtab[i].st_value;
-      fprintf(stderr,
-              "symtab[i].st_value: %lx target_addr: 0x%lx addr: 0x%lx\n",
-              symtab[i].st_value, target_addr, addr);
     }
 
     // Soymbol resolve
@@ -159,8 +141,10 @@ void elfgen(Vector *objs, HashTable /*Elf64_Sym*/ *global_symbol_table) {
       } else if (&section_header_table[symbol.st_shndx] ==
                  data_section_header) {
         symbol_section_offset = buffer_data_section_offset;
+      } else if (symbol.st_shndx == SHN_UNDEF) {
+        ERROR("Undefined section.");
       } else {
-        ERROR("Unreachable");
+        ERROR("Unreachable: unknown section.");
       }
 
       Elf64_Addr symbol_value;
@@ -181,9 +165,8 @@ void elfgen(Vector *objs, HashTable /*Elf64_Sym*/ *global_symbol_table) {
         // symbol_value = LOAD_ADDRESS + symbol_section_offset +
         // symbol.st_value;
         //  symbol_value = 32;
-        fprintf(stderr, "symbol_value: 0x%lx\n", symbol_value);
       } else {
-        ERROR("Unreachable");
+        ERROR("Unreachable: unknown r_type");
       }
       *target = symbol_value;
     }

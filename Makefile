@@ -28,6 +28,10 @@ test: bin/azld test/temp/test1.o test/temp/test2.o
 	$(BIN) test/temp/test2.o > test/temp/test2
 	chmod +x test/temp/test2
 	test/temp/test2
+	echo test3
+	cd test/test3
+	$(MAKE) clean
+	$(MAKE) run
 
 .PHONY: test
 .SILENT: test
