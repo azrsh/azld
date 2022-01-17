@@ -1,20 +1,29 @@
 .text
-.globl main
-main:
+.globl _start
+_start:
     xor %rbp,%rbp
     xor %rax, %rax
-    call callee
-    mov %rax, %rdi
+    call callee1
+    call callee2
     mov $60, %rax
+    mov $0, %rdi
     syscall
 
-callee:
+callee1:
     mov $1, %rax
     mov $1, %rdi
     mov $msg, %rsi
     mov $len, %rdx
     syscall
-    mov $0, %rax
+    ret
+
+.globl callee2
+callee2:
+    mov $1, %rax
+    mov $1, %rdi
+    mov $msg, %rsi
+    mov $len, %rdx
+    syscall
     ret
 
 .data

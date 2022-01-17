@@ -147,11 +147,6 @@ void elfgen(const void *const head, const ObjectFile *const obj) {
       int st_bind = ELF64_ST_BIND(symbol.st_info);
       int st_type = ELF64_ST_TYPE(symbol.st_info);
 
-      // unused
-      if (st_type == STT_SECTION) {
-        fprintf(stderr, "st_type: %s\n", "STT_SECTION");
-      }
-
       // TODO: Symbolごとに事前に計算してキャッシュできるはず
       // 入力されたファイル上のシンボルのアドレスを出力する実行可能ファイルの仮想アドレス上の位置に変換する
       size_t symbol_section_offset = 0;
@@ -165,17 +160,27 @@ void elfgen(const void *const head, const ObjectFile *const obj) {
       }
 
       Elf64_Addr symbol_value;
-      Elf64_Addr *target =
-          buffer + buffer_text_section_offset + relatext[i].r_offset;
+      size_t target_offset = buffer_text_section_offset + relatext[i].r_offset;
+      Elf64_Addr *target = buffer + target_offset;
+      fprintf(stderr, "r_offset: %ld\n", relatext[i].r_offset);
       if (r_type == R_X86_64_32S) {
         fprintf(stderr, "r_type: %s\n", "R_X86_64_32S");
         // S + A
         symbol_value = *target + (LOAD_ADDRESS + symbol_section_offset +
                                   relatext[i].r_addend);
+      } else if (r_type == R_X86_64_PLT32) {
+        fprintf(stderr, "r_type: %s\n", "R_X86_64_PLT32");
+        fprintf(stderr, "r_addend: %ld\n", relatext[i].r_addend);
+        // L + A - P
+        symbol_value = symbol.st_value + relatext[i].r_addend -
+                       relatext[i].r_offset + *target;
+        // symbol_value = LOAD_ADDRESS + symbol_section_offset +
+        // symbol.st_value;
+        //  symbol_value = 32;
+        fprintf(stderr, "symbol_value: 0x%lx\n", symbol_value);
       } else {
         ERROR("Unreachable");
       }
-      fprintf(stderr, "r_offset: %ld\n", relatext[i].r_offset);
       *target = symbol_value;
     }
   }

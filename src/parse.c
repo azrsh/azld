@@ -38,7 +38,7 @@ ObjectFile *parse(const void *const head) {
       // printf("sh_name: %d\n", section_header_table[i].sh_name);
       const char *const section_name =
           head + shstr->sh_offset + section_header_table[i].sh_name;
-      fprintf(stderr, "sh_name: %s\n", section_name);
+      // fprintf(stderr, "sh_name: %s\n", section_name);
 
       // text section
       if (strncmp(section_name, ".text", strlen(".text")) == 0) {
