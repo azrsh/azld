@@ -170,8 +170,8 @@ void elfgen(const void *const head, const ObjectFile *const obj) {
       if (r_type == R_X86_64_32S) {
         fprintf(stderr, "r_type: %s\n", "R_X86_64_32S");
         // S + A
-        symbol_value =
-            *target + (LOAD_ADDRESS + symbol_section_offset + symbol.st_value);
+        symbol_value = *target + (LOAD_ADDRESS + symbol_section_offset +
+                                  relatext[i].r_addend);
       } else {
         ERROR("Unreachable");
       }

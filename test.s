@@ -10,6 +10,8 @@ mov $60, %rax
 mov $0, %rdi
 syscall
 .data
+nop:
+	.ascii "nop\n"
 msg:
 	.ascii "Hello, World!\n"
 	len = . - msg
