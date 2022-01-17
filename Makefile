@@ -19,11 +19,15 @@ bin/%.o: src/%.c src/*.h
 test/test%.o: test/test%.s
 	gcc -c $< -o $@
 
-run: bin/azld test/test1.o
+test: bin/azld test/test1.o test/test2.o
 	echo test1
 	$(BIN) test/test1.o > test/test1
 	chmod +x test/test1
 	test/test1
+	echo test2
+	$(BIN) test/test2.o > test/test2
+	chmod +x test/test2
+	test/test2
 
-.PHONY: run
-.SILENT: run
+.PHONY: test
+.SILENT: test
