@@ -16,13 +16,14 @@ bin/%.o: src/%.c src/*.h
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-test.o: test.s
-	gcc -c test.s
+test/test%.o: test/test%.s
+	gcc -c $< -o $@
 
-run: bin/azld test.o
-	echo test.o 
-	$(BIN) test.o > hello
-	./hello
+run: bin/azld test/test1.o
+	echo test1
+	$(BIN) test/test1.o > test/test1
+	chmod +x test/test1
+	test/test1
 
 .PHONY: run
 .SILENT: run
