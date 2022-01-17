@@ -1,4 +1,5 @@
 #include "elfgen.h"
+#include "container.h"
 #include "util.h"
 #include <elf.h>
 #include <stddef.h>
@@ -48,7 +49,10 @@ void write_program_header(void *buffer, size_t *len, size_t text_len) {
   *len += sizeof(Elf64_Phdr);
 }
 
-void elfgen(const void *const head, const ObjectFile *const obj) {
+void elfgen(Vector *objs, HashTable /*Elf64_Sym*/ *global_symbol_table) {
+  ObjectFile *obj = vector_get(objs, 0);
+  void *head = obj->head;
+
   Elf64_Ehdr *elf_header = (Elf64_Ehdr *)head;
   if (elf_header->e_shoff == 0) {
     ERROR("No section header");

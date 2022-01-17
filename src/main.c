@@ -1,3 +1,4 @@
+#include "container.h"
 #include "elfgen.h"
 #include "parse.h"
 #include "util.h"
@@ -8,18 +9,25 @@
 
 int main(int argc, const char **argv) {
   // parse argument
-  if (argc != 2) {
-    exit(1);
+  if (argc < 2) {
+    ERROR("No input file specified.");
   }
-  const char *filename = argv[1];
 
-  // read object file
-  const void *const head = read_binary(filename);
+  HashTable *global_symbol_table = new_hash_table();
+  Vector *objs = new_vector(16);
+  for (int i = 1; i < argc; i++) {
+    const char *filename = argv[i];
 
-  // parse elf header
-  const ObjectFile *const obj = parse(head);
+    // read object file
+    void *head = read_binary(filename);
 
-  elfgen(head, obj);
+    // parse elf header
+    ObjectFile *obj = parse(head, global_symbol_table);
+
+    vector_push_back(objs, obj);
+  }
+
+  elfgen(objs, global_symbol_table);
 
   return 0;
 }

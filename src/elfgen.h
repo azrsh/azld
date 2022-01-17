@@ -1,8 +1,10 @@
+#include "container.h"
 #include "parse.h"
 
 #ifndef ELFGEN_H
 #define ELFGEN_H
 
-void elfgen(const void *const head, const ObjectFile *const obj);
+void elfgen(Vector /*ObjectFile*/ *objs,
+            HashTable /*Elf64_Sym*/ *global_symbol_table);
 
 #endif
