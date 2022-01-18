@@ -10,17 +10,24 @@
 
 ObjectFile *parse(void *head, HashTable *global_symbol_table) {
   Elf64_Ehdr *elf_header = (Elf64_Ehdr *)head;
+
+  /*
   if (elf_header->e_phoff != 0) {
     Elf64_Phdr *program_header = (Elf64_Phdr *)(head + elf_header->e_phoff);
   }
+  */
+
   if (elf_header->e_shoff == 0) {
+    ERROR("No section header");
     return NULL;
   }
 
   ObjectFile *res = calloc(1, sizeof(ObjectFile));
   res->head = head;
+  res->elf_header = elf_header;
 
   Elf64_Shdr *section_header_table = (Elf64_Shdr *)(head + elf_header->e_shoff);
+  res->section_header_table = section_header_table;
 
   /*int shstrndx = elf_header->e_shstrndx;
   if (shstrndx == SHN_UNDEF) {
@@ -31,12 +38,9 @@ ObjectFile *parse(void *head, HashTable *global_symbol_table) {
   }*/
 
   const Elf64_Shdr *const shstr = &section_header_table[elf_header->e_shstrndx];
-  fprintf(stderr, "sh: %d\n", elf_header->e_shstrndx);
 
-  Elf64_Shdr *text_section = NULL;
   Elf64_Shdr *symtab_section_header = NULL;
   Elf64_Shdr *strtab_section_header = NULL;
-  Elf64_Shdr *relatext_section_header = NULL;
   for (int i = 0; i < elf_header->e_shnum; i++) {
     // printf("section index %d\n", i);
     // printf("sh_name: %d\n", section_header_table[i].sh_name);
@@ -59,7 +63,12 @@ ObjectFile *parse(void *head, HashTable *global_symbol_table) {
       fprintf(stderr, "sh_entsize: %ld\n",
               section_header_table[i].sh_entsize);
       */
-      text_section = section_header_table + i;
+      res->text_section_header = section_header_table + i;
+    }
+
+    // data
+    if (strncmp(section_name, ".data", strlen(".data")) == 0) {
+      res->data_section_header = section_header_table + i;
     }
 
     // symtab
@@ -74,7 +83,7 @@ ObjectFile *parse(void *head, HashTable *global_symbol_table) {
 
     // rela.text
     if (strncmp(section_name, ".rela.text", strlen(".rela.text")) == 0) {
-      relatext_section_header = section_header_table + i;
+      res->relatext_section_header = section_header_table + i;
     }
   }
 
@@ -82,12 +91,14 @@ ObjectFile *parse(void *head, HashTable *global_symbol_table) {
   {
     // fprintf(stderr, "sym:\n");
     Elf64_Sym *symtab = head + symtab_section_header->sh_offset;
+    char *strtab = head + strtab_section_header->sh_offset;
     res->symtab_section_header = symtab_section_header;
     res->strtab_section_header = strtab_section_header;
+    res->symtab = symtab;
+    res->strtab = strtab;
     for (int i = 1; i < symtab_section_header->sh_size / sizeof(Elf64_Sym);
          i++) {
-      const char *symbol_name =
-          head + strtab_section_header->sh_offset + symtab[i].st_name;
+      const char *symbol_name = strtab + symtab[i].st_name;
       /*
       fprintf(stderr, "  st_name: %s\n", symbol_name);
       fprintf(stderr, "  st_name: %d\n", symtab[i].st_name);
@@ -110,9 +121,6 @@ ObjectFile *parse(void *head, HashTable *global_symbol_table) {
       }
     }
   }
-
-  // relatext
-  res->relatext_section_header = relatext_section_header;
 
   return res;
 }

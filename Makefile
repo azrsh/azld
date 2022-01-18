@@ -30,8 +30,7 @@ test: bin/azld test/temp/test1.o test/temp/test2.o
 	test/temp/test2
 	echo test3
 	cd test/test3
-	$(MAKE) clean
-	$(MAKE) run
+	$(MAKE) clean run
 
 .PHONY: test
 .SILENT: test
